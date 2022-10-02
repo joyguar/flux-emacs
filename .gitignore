@@ -1,0 +1,20 @@
+# Compiled
+*.elc
+
+# Eldev
+.eldev
+
+# Autoloads
+*-autoloads.el
+
+# Backup files
+*~
+
+# Autosave files
+\#*\#
+
+# Undo-tree save-files
+*.~undo-tree
+
+# Local files
+.local/

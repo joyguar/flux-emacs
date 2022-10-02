@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+set -e
+
+ACTION=$1
+
+emacs_d=$HOME/.config/ultra-emacs
+if [[ -d "$XDG_CONFIG_HOME" ]]; then
+  emacs_d="$XDG_CONFIG_HOME/ultra-emacs"
+fi
+
+function print_usage() {
+  echo "Usage:
+  emacs-eru ACTION
+
+Actions:
+  install               Install dependencies, compile and lint configurations
+  upgrade               Upgrade dependencies
+  test                  Test configurations
+"
+}
+
+if [ -z "$ACTION" ]; then
+  echo "No ACTION is provided"
+  print_usage
+  exit 1
+fi
+
+case "$ACTION" in
+  install)
+    cd "$emacs_d" && {
+      make bootstrap compile lint roam
+    }
+    ;;
+
+  upgrade)
+    cd "$emacs_d" && {
+      make upgrade compile lint
+    }
+    ;;
+
+  test)
+    cd "$emacs_d" && {
+      make test
+    }
+    ;;
+
+  *)
+    echo "Unrecognized ACTION $ACTION"
+    print_usage
+    ;;
+esac

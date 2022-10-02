@@ -1,0 +1,184 @@
+; -*- mode: emacs-lisp; lexical-binding: t; no-byte-compile: t -*-
+
+;; Be explicit about main file.
+(setf eldev-project-main-file "init.el"
+      eldev-main-fileset '("init.el"
+                                 "early-init.el"
+                                 "lisp/*.el"))
+
+
+
+;; Emacs doesn't allow to add directory containing init.el to load
+;; path, so we have to put other Emacs Lisp files in directory. Help
+;; Eldev commands to locate them.
+(eldev-add-loading-roots 'build "lisp")
+(eldev-add-loading-roots 'bootstrap "lisp")
+
+
+
+;; There are dependencies for testing and linting phases, they should
+;; be installed by Eldev from MELPA and GNU ELPA (latter is enabled by
+;; default).
+(eldev-use-package-archive 'melpa)
+
+
+;; Bootstrap flow. Basically set `elpa-bootstrap-p' to `t' and load
+;; init.el, which forces `init-elpa' to install all dependencies.
+
+(defvar elpa-freeze nil)
+
+(defun elpa-bootstrap ()
+  "Bootstrap personal configurations."
+  (setq-default
+   elpa-bootstrap-p t
+   load-prefer-newer t)
+  (eldev--inject-loading-roots 'bootstrap)
+  (require 'config-path)
+  (load (expand-file-name "init.el" path-emacs-dir))
+  (when elpa-freeze
+    ;; straight.el doesn't checkout specified branch (only default
+    ;; one) during cloning, meaning that during freeze process, when
+    ;; it tries to `straight-vc-git--ensure-head-at-branch', it fails
+    ;; because specified branch is not present.
+    ;;
+    ;; It seems that it happens only with straight.el for now.
+    ;;
+    ;; Not sure how to overcome this, except for making sure that
+    ;; branches exist before freezing versions.
+    ;;
+    ;; Can be used for all packages except for straight:
+    ;; (straight-recipes-retrieve 'straight)
+
+    (let ((straight--process-log nil))
+      (let ((straight--default-directory (straight--repos-dir "straight.el")))
+        (straight--process-run "git" "branch" "develop" "origin/develop")))
+
+    ;; now do your freezing stuff
+    (straight-freeze-versions)))
+
+;; We want to run this before any build command. This is also needed
+;; for `flyspell-eldev` to be aware of packages installed via
+;; straight.el.
+(add-hook 'eldev-build-system-hook #'elpa-bootstrap)
+
+;; freeze only during build command, ideally `eldev-build-system-hook'
+;; should provide current command as argument
+(add-hook 'eldev-build-hook
+          (lambda ()
+            ;; do not run freeze procedure on CI as
+            ;; we ignore these changes anyways
+            (unless (getenv "CI")
+              (setq elpa-freeze t))))
+
+
+;; Upgrade flow. Hooks into Eldev upgrade flow.
+
+(defun elpa-upgrade ()
+  "Bootstrap personal configurations."
+  ;; make sure that bootstrap has completed
+  (elpa-bootstrap)
+
+  ;;  fetch all packages and then merge the latest version
+  (straight-fetch-all)
+  (straight-merge-all)
+
+  ;; in case we pinned some versions, revert any unneccessary merge
+  (straight-thaw-versions)
+
+  ;; rebuild updated packages
+  (delete-file (concat path-packages-dir "straight/build-cache.el"))
+  (delete-directory (concat path-packages-dir "straight/build") 'recursive)
+  (straight-check-all)
+  (straight-freeze-versions))
+
+(add-hook 'eldev-upgrade-hook #'elpa-upgrade)
+
+
+
+;; We want to generate autoloads file. This line simply loads few
+;; helpers.
+(eldev-use-plugin 'autoloads)
+
+;; Eldev doesn't traverse extra loading roots, so we have to modify
+;; autoloads plugin a little bit. Basically, this modification
+;; achieves specific goal - generate autoloads from files located in
+;; Lisp directory.
+(eldev-defbuilder eldev-builder-autoloads (sources target)
+  :type           many-to-one
+  :short-name     "AUTOLOADS"
+  :message        target
+  :source-files   (:and "lisp/*.el" (:not ("lisp/*autoloads.el")))
+  :targets        (lambda (_sources) "lisp/init-autoloads.el")
+  :define-cleaner (eldev-cleaner-autoloads
+                   "Delete the generated package autoloads files."
+                   :default t)
+  :collect        (":autoloads")
+  ;; To make sure that `update-directory-autoloads' doesn't grab files it shouldn't,
+  ;; override `directory-files' temporarily.
+  (eldev-advised (#'directory-files
+                  :around
+                  (lambda (original directory &rest arguments)
+                    (let ((files (apply original directory arguments)))
+                      (if (file-equal-p directory eldev-project-dir)
+                          (let (filtered)
+                            (dolist (file files)
+                              (when (eldev-any-p (file-equal-p file it) sources)
+                                (push file filtered)))
+                            (nreverse filtered))
+                        files))))
+    (let ((inhibit-message   t)
+          (make-backup-files nil)
+          (pkg-dir (expand-file-name "lisp/" eldev-project-dir)))
+      (package-generate-autoloads (package-desc-name (eldev-package-descriptor)) pkg-dir)
+      ;; Always load the generated file.  Maybe there are cases when we don't need that,
+      ;; but most of the time we do.
+      (eldev--load-autoloads-file (expand-file-name target eldev-project-dir)))))
+
+
+
+;; Always load autoloads file.
+(add-hook
+ 'eldev-build-system-hook
+ (lambda ()
+   (eldev--load-autoloads-file
+    (expand-file-name "lisp/init-autoloads.el" eldev-project-dir))))
+
+
+;; Linting configurations.
+
+;; tell Eldev which files to lint
+(setq sentence-end-double-space nil)
+
+(defun eldev-lint-find-files-absolute (f &rest args)
+  "Call F with ARGS and ensure that result is absolute paths."
+  (seq-map (lambda (p)
+             (expand-file-name p eldev-project-dir))
+           (seq-filter (lambda (p)
+                         (not (string-suffix-p "autoloads.el" p)))
+                       (apply f args))))
+
+(advice-add 'eldev-lint-find-files :around #'eldev-lint-find-files-absolute)
+
+;; In general, `package-lint' is useful. But package prefix naming
+;; policy is not useful for personal configurations. So we chop
+;; lib/init part from the package name.
+;;
+;; And `eval-after-load'. In general it's not a good idea to use it in
+;; packages, but these are configurations.
+(with-eval-after-load 'package-lint
+  (defun package-lint--package-prefix-cleanup (f &rest args)
+    "Call F with ARGS and cleanup it's result."
+    (let ((r (apply f args)))
+      (replace-regexp-in-string "\\(init\\|lib\\|config\\|compat\\)-?" "" r)))
+  (advice-add 'package-lint--get-package-prefix :around #'package-lint--package-prefix-cleanup)
+
+  (defun package-lint--check-eval-after-load ()
+    "Do nothing."))
+
+;; Teach linter how to properly indent emacsql vectors.
+(eldev-add-extra-dependencies 'lint 'emacsql)
+(add-hook 'eldev-lint-hook
+          (lambda ()
+            (eldev-load-project-dependencies 'lint nil t)
+            (require 'emacsql)
+            (call-interactively #'emacsql-fix-vector-indentation)))
