@@ -19,7 +19,7 @@
 ;;
 ;;; Code:
 
-(require 'init-elpa)
+(require 'init-packages)
 (require 'lib-directory)
 (require 'config-organum)
 
@@ -100,8 +100,8 @@ tasks. The only exception is headings tagged as REFILE."
 
 ;;;###autoload
 (defun organum-ensure-filetag ()
-  (interactive)
   "Add missing FILETAGS to the current note."
+  (interactive)
   ;; add base-dir within organum directory as tag
   (let* ((file (buffer-file-name))
          (base-dir-tag
@@ -254,12 +254,14 @@ If nil it defaults to `split-string-default-separators', normally
 
 ;;;###autoload
 (defun organum-insert-heading-hook ()
-  (when (eq this-command 'org-insert-todo-heading-respect-content)
-    (insert (format-time-string
+  (let ((cmnd this-command)
+        (hdngs '(org-insert-todo-heading-respect-content org-insert-todo-subheading)))
+    (when (memq cmnd hdngs)
+      (insert (format-time-string
                     (concat "\nCREATED: "
                             (concat "[" (substring (cdr org-time-stamp-formats) 1 -1) "]"))))
     (org-back-to-heading)
-    (move-end-of-line())))
+    (move-end-of-line()))))
 
 (provide 'lib-organum)
 ;;; lib-organum.el ends here

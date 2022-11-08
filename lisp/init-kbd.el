@@ -21,7 +21,7 @@
 ;;
 ;;; Code:
 
-(require 'init-elpa)
+(require 'init-packages)
 
 (use-package general)
 

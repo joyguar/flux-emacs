@@ -54,6 +54,20 @@
   (leader-def
     "pr" '(consult-ripgrep :which-key "Ripgrep the project")
     "bb" '(consult-buffer :which-key "Switch buffer")))
+
+(use-package corfu
+  :init
+  (global-corfu-mode)
+  :config
+  (setq
+   corfu-cycle t
+   corfu-auto t
+   corfu-separator ?\s
+   corfu-quit-at-boundary nil
+   corfu-quit-no-match nil
+   corfu-preselect-first nil
+   corfu-on-exact-match nil))
+   
     
 (provide 'init-completion)
 ;;; init-selection.el ends here

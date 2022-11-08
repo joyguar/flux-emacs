@@ -25,6 +25,9 @@
 (require 'org-capture)
 (require 'org-roam)
 (require 'org-roam-dailies)
+(require 'citar)
+(require 'citar-format)
+
 
 ;;;###autoload
 (defun organum-capture-setup ()
@@ -54,19 +57,19 @@
                                          "#+timestamp: %<%Y%m%dT%H%M%S>\n")))
       :unnarrowed t))
    org-roam-dailies-capture-templates
-   '(("d" "Dream" entry ""
+   '(("d" "Dream" plain ""
       :target (file+head+olp "%<%Y-%m>.org"
-                             "#+title: %<%A, %d %B %Y>\n#+filetags: journal\n"
+                             "#+title: %<%B %Y>\n#+filetags:\n"
                              ("%<%Y-%m-%d %A>" "dreams" "%<%H:%M>\n"))
       :empty-lines-after 1)
      ("l" "Log" plain ""
       :target (file+head+olp "%<%Y-%m>.org"
-                             "#+title: %<%A, %d %B %Y>\n#+filetags: journal\n"
+                             "#+title: %<%B %Y>\n#+filetags:\n"
                              ("%<%Y-%m-%d %A>" "logs" "%<%H:%M>\n"))
       :empty-lines-after 1)
      ("r" "Reflection" plain ""
       :target (file+head+olp "%<%Y-%m>.org"
-                             "#+title: %<%A, %d %B %Y>\n#+filetags: journal\n"
+                             "#+title: %<%B %Y>\n#+filetags:\n"
                              ("%<%Y-%m-%d %A>" "reflections" "%<%H:%M>\n"))
       :empty-lines-after 1))))
 
@@ -91,30 +94,6 @@
   "Goto journal for today."
   (interactive)
   (org-roam-dailies-capture-today t "d"))
-
-(defun organum-capture-journal-target-heading ()
-  "Return a file target for a journal capture."
-  (let ((date-heading (format-time-string "%Y-%m-%d %A"))
-        (journal-heading (org-capture-get :journal-type)))
-    (goto-char (point-min))
-    (if (re-search-forward
-         (format org-complex-heading-regexp-format
-                 (regexp-quote date-heading))
-         nil t)
-        (beginning-of-line)
-      (goto-char (point-max))
-      (unless (bolp) (insert "\n"))
-      (insert "* " date-heading "\n")
-      (beginning-of-line 0))
-    (if (re-search-forward
-         (format org-complex-heading-regexp-format
-                 (regexp-quote journal-heading))
-         nil t)
-        (beginning-of-line)
-      (goto-char (point-max))
-      (unless (bolp) (insert "\n"))
-      (insert "* " journal-heading "\n")
-      (beginning-of-line 0))))
 
 (defun organum-capture-meeting-target ()
   "Return a target for a meeting capture."
@@ -165,6 +144,25 @@
       (concat "* MEETING with "
               (org-roam-node-title person)
               " on [%<%Y-%m-%d %a>] :MEETING:\n%U\n\n%?"))))
+
+;;;###autoload
+(defun organum-roam-node-from-cite (citekey)
+  (interactive (list (citar-select-ref)))
+  (let ((title (citar-format--entry
+                "${author editor} :: ${title}" (citar-get-entry citekey))))
+    (org-roam-capture- :templates
+                       '(("r" "reference" plain "%?" :if-new
+                          (file+head "pkm/refnotes/${citekey}.org"
+                                     ":PROPERTIES:
+:ROAM_REFS: [cite:@${citekey}]
+:END:
+#+title: ${title}\n")
+                          :immediate-finish t
+                          :unnarrowed t))
+                       :info (list :citekey citekey)
+                       :node (org-roam-node-create :title title)
+                       :props '(:finalize find-file))))
+
 
 (provide 'lib-organum-capture)
 ;;; lib-organum-capture.el ends here

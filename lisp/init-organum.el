@@ -20,7 +20,7 @@
 ;;; Code:
 
 (require 'config-path)
-(require 'init-elpa)
+(require 'init-packages)
 (require 'init-env)
 (require 'config-organum)
 
@@ -41,7 +41,7 @@
    org-startup-folded nil)
 
   ;; less is more
-  (setf org-blank-before-new-entry '((heading . nil) (plain-list-list . nil)))
+  (setf org-blank-before-new-entry '((heading . auto) (plain-list-item . auto)))
   
   ;; do not allow invisible edits
   (setq-default org-fold-catch-invisible-edits 'smart)
@@ -59,13 +59,18 @@
   (setq org-tags-column 0)
 
   ;; Set default column view headings; Task Effort Clock_Summary
-  (setq org-columns-default-format "%40ITEM(Task) %Effort(EE){:} %CLOCKSUM(Time Spent) %SCHEDULED(Scheduled) %DEADLINE(Deadline)")
+  (setq org-columns-default-format (concat "%40ITEM(Task) "
+                                           "%Effort(EE){:} "
+                                           "%CLOCKSUM(Time Spent) "
+                                           "%SCHEDULED(Scheduled) "
+                                           "%DEADLINE(Deadline)"))
 
   ;; set tags with fast selection
   (setq org-tag-alist '(("@errand" . ?e)
                         ("@home" . ?h)
                         ("@transit" . ?t)
-                        ("journals" . ?j))
+                        ("journals" . ?j)
+                        ("fc" .?f))
         org-use-tag-inheritance t
         org-tags-exclude-from-inheritance '("people",
                                             "agenda"))
@@ -102,6 +107,16 @@
   (setq org-log-into-drawer 1)
   (setq org-clock-into-drawer "CLOCK")
 
+  ;; Latex
+  (setq org-format-latex-options
+        '( :foreground default
+           :background default
+           :scale 2.75
+           :html-foreground "Black"
+           :html-background "Transparent"
+           :html-scale 1.0
+           :matchers ("begin" "$1" "$" "$$" "\\(" "\\[")))
+
   :config
   (advice-add 'org-agenda :before #'organum-agenda-files-update)
   
@@ -113,24 +128,15 @@
   :defer t
   :commands (org-clock-save)
   :init
-  ;; Agenda clock report parameters
   (setq
    org-agenda-clockreport-parameter-plist
    '(:link t :maxlevel 6 :fileskip 0 t :compact t :score 0)
-
-  ;; resolve open clocks if idle
-  org-clock-idle-time 15
-  
-  ;; Time stamp adjustment increments
-  org-time-stamp-rounding-minutes (quote (0 5))
-
-  ;; clock out behavior
-  org-clock-out-when-done t
-  org-clock-out-remove-zero-time-clocks t
-
-  ;; org clock persistence
-  org-clock-persist-file (expand-file-name "org-clock-save.el" org-directory)
-  org-clock-persist t)
+   org-clock-idle-time 15
+   org-time-stamp-rounding-minutes (quote (0 5))
+   org-clock-out-when-done t
+   org-clock-out-remove-zero-time-clocks t
+   org-clock-persist-file (expand-file-name "org-clock-save.el" org-directory)
+   org-clock-persist t)
 
   (org-clock-persistence-insinuate))
 
@@ -228,6 +234,21 @@
   :config
   (ignore-errors (org-roam-db-autosync-enable)))
 
+(use-package consult-org-roam
+  :ensure t
+  :after org-roam
+  :config
+  (setq
+   consult-org-roam-grep-func #'consult-ripgrep
+   consult-org-roam-buffer-narrow-key ?r
+   consult-org-roam-buffer-after-buffers t)
+
+  (consult-customize
+   consult-org-roam-forward-links
+   :preview-key (kbd "M-."))
+
+  (consult-org-roam-mode 1))
+
 (use-package org-capture
   :straight nil
   :defer t
@@ -248,10 +269,9 @@
   :straight nil
   :general
   (leader-def
-    "r" '(nil :which-key "org-cite...")
-    "ri" '(org-cite-insert :which-key "insert"))
+    "r" '(org-cite-insert :which-key "insert"))
   :init
-  (setq org-cite-global-bibliography '(organum-bibliography-file))
+  (setq org-cite-global-bibliography `(,organum-bibliography-file))
 
   (setq org-cite-export-processors
         '((md . (csl "chicago-full-note-bibliography.csl"))
@@ -261,49 +281,35 @@
 
 (use-package citar
   :init
-  (setq citar-bibliography '(organum-bibliography-file)))
-
-(use-package ebib
-  :general
-  (leader-def
-    "e" '(nil :which-key "ebib...")
-    "ee" '(ebib :which-key "ebib")
-    "ei" '(ebib-insert-citation :which-key "insert"))
-  :init
   (setq
-   ebib-default-directory organum-bibliography-directory
-   ebib-preload-bib-files '(organum-bibliography-file))
+   org-cite-insert-processor 'citar
+   org-cite-follow-processor 'citar
+   org-cite-activate-processor 'citar
+   citar-bibliography org-cite-global-bibliography
+   citar-notes-paths `(,organum-references-directory))
 
-  ;; let's not get stuck in the 80s
-  (setq ebib-bibtex-dialect 'biblatex)
-
-  ;; log time of creation
-  (setq ebib-use-timestamp t)
-
-  ;; citations
-  (setq ebib-citations-insert-multiple t)
-
-  ;; notes
   (setq
-   ebib-notes-directory organum-references-directory
-   ebib-notes-locations organum-references-directory
-   ebib-notes-storage 'one-note-per-file)
+   citar-templates
+   '((main . "${author editor:18}     ${date year issued:4}     ${title:30}")
+     (suffix . "          ${=key= id:14}    ${=type=:8}    ${tags keywords:*}")
+     (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
+     (note . "Notes on ${author editor}, ${title}"))))
 
-  (setq ebib-notes-display-max-lines 10)
+(use-package citar-org-roam
+  :after citar org-roam
+  :no-require
+  :config (citar-org-roam-mode))
 
-  (setq ebib-file-search-dirs (list "/home/loki/Sync/library/books" "/home/loki/Sync/library/papers")))
+(use-package hydra)
 
-(use-package biblio
-  :general
-  (leader-def
-    "b" '(nil :which-key "biblio...")
-    "bl" '(biblio-lookup :which-key "lookup")))
-
-(use-package ebib-biblio
-  :straight nil
-  :after (ebib biblio)
-  :bind (:map biblio-selection-mode-map
-              ("e" . ebib-biblio-selection-import)))
+(use-package org-fc
+  :straight
+  (org-fc :type git :repo "https://git.sr.ht/~l3kn/org-fc"
+          :files (:defaults "awk" "demo.org"))
+   :custom (org-fc-directories '("~/organum/pkm/"))
+   :config
+   (require 'org-fc-hydra)
+   (require 'org))
 
 (provide 'init-organum)
 ;;; init-org.el ends here

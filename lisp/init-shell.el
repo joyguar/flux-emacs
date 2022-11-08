@@ -19,7 +19,7 @@
 ;;
 ;;; Code::
 
-(require 'init-elpa)
+(require 'init-packages)
 (require 'lib-proc)
 
 (defun flux-shell-mode-hook ()

@@ -19,7 +19,7 @@
 ;;
 ;;; Code:
 
-(require 'init-elpa)
+(require 'init-packages)
 (require 'config-organum)
 (require 'lib-organum)
 
@@ -62,7 +62,7 @@ Affects the following commands:
 
 ;;;###autoload
 (defun organum-project-files ()
-    "Return a list of note files containing 'agenda' tag." ;
+    "Return a list of note files containing \\='agenda' tag." ;
     (seq-uniq
      (seq-map
       #'car
@@ -508,7 +508,7 @@ longer than LEN.
 Usage example:
 
   (setq org-agenda-prefix-format
-        '((agenda . \" %(org-agenda-category) %?-12t %12s\")))
+        \\='((agenda . \" %(org-agenda-category) %?-12t %12s\")))
 
 Refer to `org-agenda-prefix-format' for more information."
   (let* ((file-name (when buffer-file-name

@@ -43,7 +43,7 @@
 
 ;; bootstrap
 (require 'config-path)
-(require 'init-elpa)
+(require 'init-packages)
 
 ;; Setup `custom-file`.
 (setq custom-file (concat path-local-dir "custom.el"))
@@ -68,10 +68,15 @@
 (require 'init-completion)
 (require 'init-dired)
 (require 'init-magit)
+(require 'init-debug)
 (require 'init-pdf)
+(require 'init-term)
 (require 'init-shell)
 (require 'init-project)
 (require 'init-grep)
+(require 'init-refs)
+(require 'init-gpg)
+(require 'init-notmuch)
 
 ;; languages
 (require 'init-python)

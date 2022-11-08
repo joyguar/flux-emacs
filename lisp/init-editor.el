@@ -52,22 +52,31 @@
 ;; written, and never again until it is killed and reopened. This is better
 ;; suited to version control, and I don't want world-readable copies of
 ;; potentially sensitive material floating around our filesystem.
-(setq create-lockfiles nil
-      make-backup-files nil)
+(setq-default create-lockfiles nil
+              make-backup-files nil)
 
 ;; auto-save files
 (setq auto-save-default t
       auto-save-include-big-deletions t
-      auto-save-list-file-prefix (expand-file-name "auto-save-list/.saves-" path-cache-dir)
-      auto-save-file-name-transforms `(("\\`/[^/]*:\\([^/]*/\\)*\\([^/]*\\)\\'" "/tmp/\\2" t)))
+      auto-save-list-file-prefix (concat path-cache-dir "autosave/")
+      tramp-auto-save-directory  (concat path-cache-dir "tramp-autosave/")
+      auto-save-file-name-transforms
+      (list (list "\\`/[^/]*:\\([^/]*/\\)*\\([^/]*\\)\\'"
+                  ;; Prefix tramp autosaves to prevent conflicts with local ones
+                  (concat auto-save-list-file-prefix "tramp-\\2") t)
+            (list ".*" auto-save-list-file-prefix t)))
  
 ;;
 ;;; Formatting
 
 ;; indenting
 (setq-default indent-tabs-mode nil
-              tab-width 4
-              tab-always-indent nil)
+              tab-width 4)
+
+;; completion
+(setq
+ completion-cycle-threshold 3
+ tab-always-indent 'complete)
 
 ;; fill column
 (setq-default fill-column 80)

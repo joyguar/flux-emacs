@@ -23,9 +23,6 @@
 
 (require 'winner)
 
-;; no startup screen
-;;(setq inhibit-startup-screen t)
-
 ;; no startup message
 (setq inhibit-startup-message t)
 (setq inhibit-startup-echo-area-message t)
@@ -95,27 +92,32 @@
    doom-modeline-window-width-limit 90
    doom-modeline-minor-modes t))
 
-;; (use-package modus-themes
-;;   :init
-;;   (setq modus-themes-operandi-color-overrides '((fg-main . "#000000")
-;; 						(bg-main . "#faf8f5")
-;; 						(bg-region . "#efdfff")
-;; 						(bg-inactive . "#e6e4e1")
-;; 						(bg-hl-line . "#e6e4e1")))
-;;   (setq modus-themes-vivendi-color-overrides '((fg-main . "#fdf3ec")
-;; 					       (bg-main . "#24242d")
-;; 					       (bg-region . "#4f3d88")
-;; 					       (bg-inactive . "#2f2f3b")
-;; 					       (bg-hl-line . "#2f2f3b")))
-;;   :config
-;;   (load-theme 'modus-vivendi t))
+(use-package modus-themes
+  :init
+  (setq modus-themes-operandi-color-overrides '((fg-main . "#000000")
+						(bg-main . "#faf8f5")
+						(bg-region . "#efdfff")
+						(bg-inactive . "#e6e4e1")
+						(bg-hl-line . "#e6e4e1")))
+  (setq modus-themes-vivendi-color-overrides '((fg-main . "#fdf3ec")
+					       (bg-main . "#24242d")
+					       (bg-region . "#4f3d88")
+					       (bg-inactive . "#2f2f3b")
+					       (bg-hl-line . "#2f2f3b"))))
 
 (use-package doom-themes
  :ensure t
  :config
- (setq doom-themes-enable-bolt t
+ (setq doom-themes-enable-bold t
        doom-themes-enable-italic t)
- (load-theme 'doom-one t))
+ (load-theme 'doom-one t)
+
+ (doom-themes-visual-bell-config)
+ (doom-themes-org-config))
+
+(use-package solaire-mode
+  :config
+  (solaire-global-mode +1))
 
 (use-package dashboard
   :functions (winner-undo)
@@ -137,12 +139,13 @@
                              (projects  . "briefcase")
                              (registers . "database"))
 
-   dashboard-set-footer nil
-   dashboard-footer (format "Don't you let that deal go down, %s" (format-time-string "%Y")))
-
+   dashboard-set-footer nil)
+  
   (dashboard-setup-startup-hook))
 
-(use-package rainbow-delimiters)
+(setup (:straight rainbow-delimiters))
+
+(setup (:straight origami))
 
 (provide 'init-ui)
 ;;; init-ui.el ends here
