@@ -19,7 +19,7 @@
 ;;
 ;;; Code::
 
-(require 'init-packages)
+(require 'init-elpa)
 (require 'lib-proc)
 
 (defun flux-shell-mode-hook ()
@@ -31,24 +31,21 @@
           (buffer-live-p (process-buffer process))
           (kill-buffer (process-buffer process))))))
 
-(use-package shell
-  :straight nil
+(elpa-use-package shell
   :hook ((shell-mode . flux-shell-mode-hook)))
 
-(use-package coterm
+(elpa-use-package coterm
   :config
   (coterm-mode 1))
   
-(use-package eshell
-  :straight nil
+(elpa-use-package eshell
   :defer t
   :init
   (setq
    eshell-history-file-name (expand-file-name "eshell/history" path-cache-dir)
    eshell-last-dir-ring-file-name nil))
 
-(use-package sh-script
-  :straight nil
+(elpa-use-package sh-script
   :commands (sh-shell-process)
   :config
   ;; setup indentation

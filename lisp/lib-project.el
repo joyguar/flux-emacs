@@ -22,7 +22,7 @@
 (require 'lib-eval)
 
 (require 'project)
-(require 'magit)
+;; (require 'magit)
 
 (defun project-p ()
   "Return non-nil when located in a project."

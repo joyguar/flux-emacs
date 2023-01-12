@@ -21,17 +21,43 @@
 ;;
 ;;; Code:
 
-(require 'init-packages)
+(require 'init-elpa)
 
-(use-package general)
 
-(general-create-definer leader-def
-  :keymaps 'override
-  :prefix "C-c"
-  :prefix-command 'prefix-command
-  :prefix-map 'prefix-map)
 
-(use-package which-key
+
+(elpa-use-package bind-key
+  :ensure t
+  :config
+  (add-to-list 'same-window-buffer-names "*Personal Keybindings*"))
+
+
+(elpa-use-package general
+  :init
+  (leader-def
+    "/" '(nil :which-key "search...")
+    "[" '(nil :which-key "previous...")
+    "a" '(nil :which-key "align...")
+    "g" '(nil :which-key "git...")
+    "i" '(nil :which-key "insert...")
+    "j" '(nil :which-key "jump...")
+    "o" '(nil :which-key "open...")
+    "v" '(nil :which-key "vino..."))
+  :config
+  (defmacro leader-def (&rest args)
+  "A wrapper for `general-def'.
+
+ARGS are arguments, right?"
+  (declare (indent defun))
+  `(,'general-def ,@args ,@'(:states nil
+                             :keymaps 'override
+                             :prefix "M-m"
+                             :prefix-command 'prefix-command
+                             :prefix-map 'prefix-map))))
+
+(elpa-require bind-key)
+
+(elpa-use-package which-key
   :diminish which-key-mode
   :hook (after-init . which-key-mode))
 

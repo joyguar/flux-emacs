@@ -56,6 +56,7 @@
               make-backup-files nil)
 
 ;; auto-save files
+(defvar tramp-auto-save-directory) ;; Suppress byte compiler warning
 (setq auto-save-default t
       auto-save-include-big-deletions t
       auto-save-list-file-prefix (concat path-cache-dir "autosave/")
@@ -131,6 +132,20 @@
         '(kill-ring
           mark-ring global-mark-ring
           search-ring regexp-search-ring)))
+
+(use-package helpful
+  :commands (helpful-callable helpful-variable)
+  :init
+  (setq apropos-do-all t)
+
+  (global-set-key [remap describe-function] #'helpful-callable)
+  (global-set-key [remap describe-command] #'helpful-command)
+  (global-set-key [remap describe-variable] #'helpful-variable)
+  (global-set-key [remap describe-key] #'helpful-key)
+  (global-set-key [remap describe-symbol] #'helpful-symbol))
+
+  ;; Apropos does not obey helpful. Possible fix:
+  ;;  https://github.com/Wilfred/helpful/issues/25
 
 (provide 'init-editor)
 ;;; init-editor.el ends here

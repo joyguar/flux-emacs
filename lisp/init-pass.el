@@ -1,4 +1,4 @@
-;;; init-dired.el --- Description -*- lexical-binding: t; -*-
+;;; init-pass.el --- Description -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2022 Daniel Lucas
 ;;
@@ -8,28 +8,20 @@
 ;; Modified: June 23, 2022
 ;; Version: 0.0.1
 ;; Keywords: abbrev bib c calendar comm convenience data docs emulations extensions faces files frames games hardware help hypermedia i18n internal languages lisp local maint mail matching mouse multimedia news outlines processes terminals tex tools unix vc wp
-;; Homepage: https://github.com/danielclucas/lib-org-agenda
+;; Homepage: https://github.com/danielclucas/init-org
 ;; Package-Requires: ((emacs "24.3"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
 ;;; Commentary:
 ;;
-;; Configurations for `dired'.
-;;
-;;  Description
+;;  Password related utilities
 ;;
 ;;; Code:
 
-(elpa-use-package dired
-  :init
-  (setq
-   dired-listing-switches "-alh --group-directories-first"
-   dired-recursive-copies 'always
-   dired-recursive-deletes 'top
-   dired-auto-revert-buffer t
-   dired-hide-details-hide-symlink-targets nil))
+(use-package password-store)
 
-(provide 'init-dired)
-;;; init-dir-editor.el ends here
+(use-package pass)
 
+(provide 'init-pass)
+;;; init-pass.el ends here

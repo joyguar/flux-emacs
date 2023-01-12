@@ -21,7 +21,7 @@
 ;;
 ;;; Code:
 
-(require 'init-packages)
+(require 'init-elpa)
 
 (defconst env-graphic-p (display-graphic-p))
 (defconst env-rootp (string-equal "root" (getenv "USER")))

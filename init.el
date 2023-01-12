@@ -39,11 +39,11 @@
 
 ;; hello world
 (setq-default user-full-name "Daniel Lucas"
-              user-mail-address "dclucas@protonmail.com")
+              user-mail-address "daniellucas@fastmail.com")
 
 ;; bootstrap
 (require 'config-path)
-(require 'init-packages)
+(require 'init-elpa)
 
 ;; Setup `custom-file`.
 (setq custom-file (concat path-local-dir "custom.el"))
@@ -60,14 +60,13 @@
 (require 'init-kbd)
 (require 'init-editor)
 (require 'init-ui)
-(require 'init-buffer)
-(require 'init-window)
+;; (require 'init-popups)
 
 ;; utilities
 (require 'init-organum)
 (require 'init-completion)
 (require 'init-dired)
-(require 'init-magit)
+;; (require 'init-magit)
 (require 'init-debug)
 (require 'init-pdf)
 (require 'init-term)
@@ -77,15 +76,20 @@
 (require 'init-refs)
 (require 'init-gpg)
 (require 'init-notmuch)
+(require 'init-pass)
+(require 'init-theme-extras)
 
 ;; languages
 (require 'init-python)
+(require 'init-yuck)
 
 ;; I don't use `customize' interface, but .dir-locals.el put 'safe'
 ;; variables into `custom-file'. And to be honest, I hate to allow
 ;; them every time I restart Emacs.
 (when (file-exists-p custom-file)
   (load custom-file nil 'nomessage))
+
+(elpa-block-until-ready)
 
 (provide 'init)
 ;;; init.el ends here

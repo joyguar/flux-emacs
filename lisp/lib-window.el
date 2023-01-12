@@ -21,18 +21,18 @@
 ;;
 ;;; Code:
 
-(require 'popper)
+;; (require 'popper)
 
-;;;###autoload
-(defun popper-close-window-hack (&rest _)
-      "Close popper window via `C-g'."
-      ;; `C-g' can deactivate region
-      (when (and (called-interactively-p 'interactive)
-                 (not (region-active-p))
-                 popper-open-popup-alist)
-        (let ((window (caar popper-open-popup-alist)))
-          (when (window-live-p window)
-            (delete-window window)))))
+;; ;;;###autoload
+;; (defun popper-close-window-hack (&rest _)
+;;       "Close popper window via `C-g'."
+;;       ;; `C-g' can deactivate region
+;;       (when (and (called-interactively-p 'interactive)
+;;                  (not (region-active-p))
+;;                  popper-open-popup-alist)
+;;         (let ((window (caar popper-open-popup-alist)))
+;;           (when (window-live-p window)
+;;             (delete-window window)))))
 
 (provide 'lib-window)
 ;;; lib-window.el ends here

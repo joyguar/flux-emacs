@@ -81,10 +81,10 @@
 ;; enable bidirectional text
 (setq bidi-disable-reordering 'left-to-right)
 
-(use-package all-the-icons
+(elpa-use-package all-the-icons
   :if (display-graphic-p))
 
-(use-package doom-modeline
+(elpa-use-package doom-modeline
   :hook (after-init . doom-modeline-mode)
   :init
   (setq
@@ -92,20 +92,7 @@
    doom-modeline-window-width-limit 90
    doom-modeline-minor-modes t))
 
-(use-package modus-themes
-  :init
-  (setq modus-themes-operandi-color-overrides '((fg-main . "#000000")
-						(bg-main . "#faf8f5")
-						(bg-region . "#efdfff")
-						(bg-inactive . "#e6e4e1")
-						(bg-hl-line . "#e6e4e1")))
-  (setq modus-themes-vivendi-color-overrides '((fg-main . "#fdf3ec")
-					       (bg-main . "#24242d")
-					       (bg-region . "#4f3d88")
-					       (bg-inactive . "#2f2f3b")
-					       (bg-hl-line . "#2f2f3b"))))
-
-(use-package doom-themes
+(elpa-use-package doom-themes
  :ensure t
  :config
  (setq doom-themes-enable-bold t
@@ -115,37 +102,39 @@
  (doom-themes-visual-bell-config)
  (doom-themes-org-config))
 
-(use-package solaire-mode
+(elpa-use-package solaire-mode
   :config
   (solaire-global-mode +1))
 
-(use-package dashboard
-  :functions (winner-undo)
-  :init
-  (setq
-   dashboard-banner-logo-title "FLUX EMACS"
-   dashboard-startup-banner (expand-file-name "banner.txt" user-emacs-directory)
-   dashboard-center-content t
-   dashboard-show-shortcuts t
-   dashboard-projects-backend 'project-el
-   dashboard-items '((recents . 10)
-		     (bookmarks . 5)
-		     (projects . 5))
+(elpa-use-package dashboard
+                  :functions (winner-undo)
+                  :init
+                  (setq
+                   dashboard-banner-logo-title "FLUX EMACS"
+                   dashboard-startup-banner (expand-file-name "banner.txt" user-emacs-directory)
+                   dashboard-center-content t
+                   dashboard-show-shortcuts t
+                   dashboard-projects-backend 'project-el
+                   dashboard-items '((recents . 10)
+  		                             (bookmarks . 5)
+  		                             (projects . 5))
 
-   dashboard-set-init-info t
-   dashboard-heading-icons '((recents   . "history")
-                             (bookmarks . "bookmark")
-                             (agenda    . "calendar")
-                             (projects  . "briefcase")
-                             (registers . "database"))
+                   dashboard-set-init-info t
+                   dashboard-heading-icons '((recents   . "history")
+                                             (bookmarks . "bookmark")
+                                             (agenda    . "calendar")
+                                             (projects  . "briefcase")
+                                             (registers . "database"))
 
-   dashboard-set-footer nil)
-  
-  (dashboard-setup-startup-hook))
+                   dashboard-set-footer nil)
+                  
+                  (dashboard-setup-startup-hook))
 
-(setup (:straight rainbow-delimiters))
+(elpa-use-package frames-only-mode
+  :hook (after-init . frames-only-mode))
 
-(setup (:straight origami))
+(elpa-use-package rainbow-delimeters
+  :hook (prog-mode . rainbow-delimiters-mode))
 
 (provide 'init-ui)
 ;;; init-ui.el ends here

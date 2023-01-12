@@ -31,8 +31,7 @@
       mail-user-agent 'message-user-agent
       mail-specify-envelope-from t)
 
-(use-package message
-  :straight nil
+(elpa-use-package message
   :config
   (setq
    message-directory mail-directory
@@ -49,15 +48,23 @@
    message-confirm-send nil
    message-kill-buffer-on-exit t
    message-wide-reply-confirm-recipients t))
-  
-(use-package notmuch
-  :general
-  (leader-def
-    "m" '(notmuch :which-key "Notmuch"))
+
+(elpa-use-package notmuch
+  :commands notmuch
+  :bind (("C-x m" . notmuch-mua-new-mail)
+         ("C-c m" . notmuch-jump-search)
+         :map notmuch-search-mode-map
+         ("/" . notmuch-search-filter)
+         ("r" . notmuch-search-reply-to-thread)
+         ("R" . notmuch-search-reply-to-thread-sender)
+         :map notmuch-show-mode-map
+         ("r" . notmuch-show-reply)
+         ("R" . notmuch-show-reply-sender))
+  :hook ((notmuch-message-mode . turn-off-auto-fill)
+         (notmuch-mua-send . notmuch-mua-attachment-check))
   :config
-  (setq
-   notmuch-fcc-dirs `(("danielchlucas@gmail.com" . "gmail/sent")
-                      ("dclucas@fastmail.com" . "fastmail/sent")))
+  (setq notmuch-fcc-dirs `(("danielchlucas@gmail.com" . "gmail/sent")
+                           ("dclucas@fastmail.com" . "fastmail/sent")))
    ;;; UI
   (setq
    notmuch-show-logo nil
@@ -105,60 +112,8 @@
      ( :name "mailing lists"
        :query "tag:list AND_NOT tag:archive"
        :sort-order newest-first
-       :key ,(kbd "m"))))
-
-  ;;; tags
-  (setq
-   notmuch-archive-tags '("-inbox")
-   notmuch-message-replied-tags '("+replied")
-   notmuch-message-forwardwed-tags '("+forwarded")
-   notmuch-show-mark-read-tags '("-unread")
-   notmuch-draft-tags '("+draft")
-   notmuch-draft-folder "drafts"
-   notmuch-draft-save-plaintext 'ask)
-
-  ;;; email composition
-  (setq
-   notmuch-mua-compose-in 'current-window
-   notmuch-mua-hidden-headers nil
-   notmuch-address-command 'internal
-   notmuch-always-prompt-for-sender t
-   notmuch-mua-cite-function 'message-cite-original-without-signature
-   notmuch-mua-reply-insert-header-p-function 'notmuch-show-reply-insert-header-p-never
-   notmuch-mua-user-agent-function nil
-   notmuch-maildir-use-notmuch-insert t
-   notmuch-crypto-process-time t
-   notmuch-crypto-get-keys-asynchronously t
-   notmuch-mua-attachment-regexp "\\b\\(attache?ment\\|attached\\|attach\\|pi[èe]ce +jointe?\\)\\b")
-
-  ;;; reading messages
-  (setq
-   notmuch-show-relative-dates t
-   notmuch-show-all-multipart/alternative-parts nil
-   notmuch-show-indent-messages-width 0
-   notmuch-show-indent-multipart nil
-   notmuch-show-part-button-default-action 'notmuch-show-view-part
-   notmuch-show-text/html-blocked-images "."
-   notmuch-wash-wrap-lines-length nil
-   notmuch-unthread-show-out t
-   notmuch-message-headers '("To" "Cc" "Subject" "Date")
-   notmuch-message-headers-visible t)
-
-  ;;; hooks
-  (add-hook 'notmuch-mua-send-hook #'notmuch-mua-attachment-check)
-
-  ;;; key bindings
-  (let ((map global-map))
-    (define-key map (kbd "C-c m") #'notmuch)
-    (define-key map (kbd "C-x m") #'notmuch-mua-new-mail)) ; override `compose-mail'
-  (let ((map notmuch-search-mode-map))
-    (define-key map (kbd "/") #'notmuch-search-filter)
-    (define-key map (kbd "r") #'notmuch-search-reply-to-thread)
-    (define-key map (kbd "R") #'notmuch-search-reply-to-thread-sender))
-  (let ((map notmuch-show-mode-map))
-    (define-key map (kbd "r") #'notmuch-show-reply)
-    (define-key map (kbd "R") #'notmuch-show-reply-sender))
-  (define-key notmuch-hello-mode-map (kbd "C-<tab>") nil))
+       :key ,(kbd "m")))))
+  
 
 (provide 'init-notmuch)
 ;;; init-notmuch.el ends here

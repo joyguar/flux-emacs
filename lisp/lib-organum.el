@@ -19,7 +19,7 @@
 ;;
 ;;; Code:
 
-(require 'init-packages)
+(require 'init-elpa)
 (require 'lib-directory)
 (require 'config-organum)
 

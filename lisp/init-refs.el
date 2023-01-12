@@ -19,8 +19,7 @@
 ;;
 ;;; Code:
 
-(use-package bibtex
-  :straight nil
+(elpa-use-package bibtex
   :init
   (setq bibtex-dialect 'biblatex
         bibtex-auto-key-edit-before-use t
@@ -33,7 +32,7 @@
         bibtex-autokey-titleword-separator ""
         bibtex-autokey-year-length 4))
   
-(use-package ebib
+(elpa-use-package ebib
   :init
   (setq
    ebib-default-directory organum-bibliography-directory
@@ -60,10 +59,9 @@
                                     "/home/loki/Sync/library/papers"
                                     "/home/loki/Sync/library/articles")))
 
-(use-package biblio)
+(elpa-use-package biblio)
 
-(use-package ebib-biblio
-  :straight nil
+(elpa-use-package ebib-biblio  
   :after (ebib biblio))
 
 (provide 'init-refs)

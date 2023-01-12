@@ -25,6 +25,10 @@
 
 (defvar organum-inbox-file (expand-file-name "gtd/inbox.org" organum-directory))
 
+(defvar organum-slipbox-file (expand-file-name "pkm/slipbox.org" organum-directory))
+
+(defvar organum-flashcards-file (expand-file-name "pkm/flashcards.org" organum-directory))
+
 (defvar organum-bibliography-directory (expand-file-name "pkm/bibliographies" organum-directory))
 
 (defvar organum-bibliography-file (expand-file-name "bibliography.bib" organum-bibliography-directory))

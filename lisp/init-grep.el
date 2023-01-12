@@ -19,14 +19,13 @@
 ;;
 ;;; Code:
 
-(use-package rg
+(elpa-use-package rg
   :defer t
   :commands (rg-project)
   :init
   (defalias 'project-find-regexp #'rg-project))
 
-(use-package wgrep
-  :straight nil)
+(elpa-use-package wgrep)
 
 (provide 'init-grep)
 ;;; init-grep.el ends here

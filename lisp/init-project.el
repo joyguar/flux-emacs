@@ -22,8 +22,7 @@
 (require 'config-path)
 (require 'lib-project)
 
-(use-package project
-  :straight nil  
+(elpa-use-package project
   :general
   (leader-def
     "p" '(nil :which-key "project...")

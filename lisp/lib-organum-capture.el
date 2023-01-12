@@ -42,13 +42,17 @@
       :kill-buffer t
       :unnarrowed t)
      ("s" "Slipbox" entry
-      (file "pkm/slipbox.org")
+      (file organum-slipbox-file)
       "* %?\n")
      ("m" "Meeting" entry
       (function organum-capture-meeting-target)
       (function organum-capture-meeting-template)
       :clock-in t
-      :clock-resume t))
+      :clock-resume t)
+     ("f" "Basic Flashcard" entry
+      (file organum-flashcards-file)
+      (function organum-capture-flashcard)
+      :unnarrowed t))
    org-roam-capture-templates
    `(("d" "default" plain "%?"
       :target (file+head "%(organum-subdir-select)/%<%Y%m%dT%H%M%S>.org"
@@ -163,6 +167,26 @@
                        :node (org-roam-node-create :title title)
                        :props '(:finalize find-file))))
 
+(defun organum-capture-flashcard ()
+  "Return a template for flashcard capture."
+  (let ((note-type (completing-read "Choose a note type: "
+                                    '("Basic" "Cloze"))))
+    (if (string-equal note-type "Basic")
+        (string-join '("* %^{Heading}\n"
+                       ":PROPERTIES:\n"
+                       ":ANKI_NOTE_TYPE: Basic\n"
+                       ":ANKI_DECK: Default\n"
+                       ":END:\n"
+                       "** Front\n"
+                       "%?\n"
+                       "** Back\n\n"))
+      (string-join '("* %^{Heading}\n"
+                     ":PROPERTIES:\n"
+                     ":ANKI_NOTE_TYPE: Cloze\n"
+                     ":ANKI_DECK: Default\n"
+                     ":END:\n"
+                     "** Text\n\n"
+                     "** Extra\n")))))
 
 (provide 'lib-organum-capture)
 ;;; lib-organum-capture.el ends here

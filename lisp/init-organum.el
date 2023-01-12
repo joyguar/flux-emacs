@@ -20,11 +20,11 @@
 ;;; Code:
 
 (require 'config-path)
-(require 'init-packages)
+(require 'init-elpa)
 (require 'init-env)
 (require 'config-organum)
 
-(use-package org
+(elpa-use-package org
   :hook ((before-save . organum-pre-save-hook)
          (org-insert-heading . organum-insert-heading-hook))
   :init
@@ -123,8 +123,7 @@
   ;; Use RET to open org-mode links, including those in quick-help.org
   (setq org-return-follows-links t))
 
-(use-package org-clock
-  :straight nil
+(elpa-use-package org-clock  
   :defer t
   :commands (org-clock-save)
   :init
@@ -140,8 +139,7 @@
 
   (org-clock-persistence-insinuate))
 
-(use-package org-refile
-  :straight nil
+(elpa-use-package org-refile
   :defer t
   :init
   (setq
@@ -156,8 +154,7 @@
         (lambda (&rest _)
           (organum-refile-save-buffers))))
 
-(use-package org-agenda
-  :straight nil
+(elpa-use-package org-agenda
   :defer t
   :general
   (leader-def
@@ -208,20 +205,20 @@
 	,organum-agenda-cmd-waiting-postponed-tasks
 	,organum-agenda-cmd-someday-projects-and-tasks)))))
 
-(use-package org-roam
+(elpa-use-package org-roam
   :defer t
   :commands (org-roam-db-autosync-enable
              org-roam-db-sync)
   :general
   (leader-def
-   "n" '(nil :which-key "org-roam...")
-   "nf" '(org-roam-node-find :which-key "find")
-   "ni" '(org-roam-node-insert :which-key "insert")
-   "ndt" '(organum-journal-goto-today :which-key "today")
-   "ndn" '(org-roam-dailies-goto-next :which-key "next")
-   "ndp" '(org-roam-dailies-goto-previous :which-key "previous")
-   "nf" '(org-roam-node-find :which-key "find")
-   "ni" '(org-roam-node-insert :which-key "insert"))
+    "n" '(nil :which-key "org-roam...")
+    "nf" '(org-roam-node-find :which-key "find")
+    "ni" '(org-roam-node-insert :which-key "insert")
+    "ndt" '(organum-journal-goto-today :which-key "today")
+    "ndn" '(org-roam-dailies-goto-next :which-key "next")
+    "ndp" '(org-roam-dailies-goto-previous :which-key "previous")
+    "nf" '(org-roam-node-find :which-key "find")
+    "ni" '(org-roam-node-insert :which-key "insert"))
   :init
   (setq
    org-roam-v2-ack t
@@ -234,7 +231,7 @@
   :config
   (ignore-errors (org-roam-db-autosync-enable)))
 
-(use-package consult-org-roam
+(elpa-use-package consult-org-roam
   :ensure t
   :after org-roam
   :config
@@ -245,12 +242,11 @@
 
   (consult-customize
    consult-org-roam-forward-links
-   :preview-key (kbd "M-."))
+   :preview-key (kbd "C-SPC"))
 
   (consult-org-roam-mode 1))
 
-(use-package org-capture
-  :straight nil
+(elpa-use-package org-capture
   :defer t
   :general
   (leader-def
@@ -265,8 +261,7 @@
   :config
   (organum-capture-setup))
 
-(use-package oc
-  :straight nil
+(elpa-use-package oc
   :general
   (leader-def
     "r" '(org-cite-insert :which-key "insert"))
@@ -279,7 +274,7 @@
           (odt . (csl "chicago-fullnote-bibliography.csl"))
           (t . (csl "modern-language-association.csl")))))
 
-(use-package citar
+(elpa-use-package citar
   :init
   (setq
    org-cite-insert-processor 'citar
@@ -295,21 +290,34 @@
      (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
      (note . "Notes on ${author editor}, ${title}"))))
 
-(use-package citar-org-roam
+(elpa-use-package citar-org-roam
   :after citar org-roam
   :no-require
   :config (citar-org-roam-mode))
 
-(use-package hydra)
+(elpa-use-package anki-editor
+  :after org-capture
+  :bind (:map org-mode-map
+               ("C-c C-=" . anki-editor-cloze-region-auto-incr)
+               ("C-c C--" . anki-editor-cloze-region-dont-incr)
+               ("C-c C-0" . anki-editor-reset-cloze-number)
+               ("C-c C-p" . anki-editor-push-tree))
+  :hook (org-capture-after-finalize . anki-editor-reset-cloze-number) ; Reset cloze-number after each capture.
+  :config
+  (setq anki-editor-create-decks 't
+        anki-editor-org-tags-as-anki-tags t)
 
-(use-package org-fc
-  :straight
-  (org-fc :type git :repo "https://git.sr.ht/~l3kn/org-fc"
-          :files (:defaults "awk" "demo.org"))
-   :custom (org-fc-directories '("~/organum/pkm/"))
-   :config
-   (require 'org-fc-hydra)
-   (require 'org))
+  ;; Initialize
+  (anki-editor-reset-cloze-number))
+
+(elpa-use-package olivetti
+  :bind
+  ("C-c O" . olivetti-mode)
+  :config
+  (setq-default
+   olivetti-body-width 0.80
+   olivetti-minimum-body-width 72
+   olivetti-recall-visual-line-mode-entry-state t))
 
 (provide 'init-organum)
 ;;; init-org.el ends here

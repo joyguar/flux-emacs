@@ -19,8 +19,7 @@
 ;;
 ;;; Code:
 
-(use-package epg
-  :straight nil
+(elpa-use-package epg
   :config
   (setq epg-pinentry-mode 'loopback))
 
